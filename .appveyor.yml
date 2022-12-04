@@ -1,0 +1,63 @@
+version: '{build}'
+image: 'Visual Studio 2017'
+platform: x64
+
+max_jobs: 1
+
+environment:
+  GOPATH: c:\go
+  docker_username:
+    secure: em/TNLUXxG19O/HvbvfJuQ==
+  docker_password:
+    secure: Yo9FJJqihaNz5q8T4Jz8tQ==
+  GO111MODULE: on
+
+branches:
+  only:
+    - master
+
+install:
+  - ps: |
+      docker version
+      go version
+      go env
+
+build_script:
+  - ps: |
+      go mod download
+      if ( $env:APPVEYOR_REPO_TAG -eq 'false' ) {
+        $version = $env:APPVEYOR_REPO_COMMIT
+      } else {
+        $version = $env:APPVEYOR_REPO_TAG_NAME
+      }
+      go build -ldflags "-X main.Version=$version" -a -o release/drone-tele.exe .
+
+      docker pull microsoft/nanoserver:10.0.14393.1884
+      docker build -f docker/Dockerfile.windows.amd64 -t New-Dev3/drone-tele:windows-amd64 .
+
+test_script:
+  - ps: |
+      docker run --rm New-Dev3/drone-tele:windows-amd64 --version
+
+deploy_script:
+  - ps: |
+      $ErrorActionPreference = 'Stop';
+      if ( $env:APPVEYOR_PULL_REQUEST_NUMBER ) {
+        Write-Host Nothing to deploy.
+      } else {
+        echo $env:DOCKER_PASSWORD | docker login --username $env:DOCKER_USERNAME --password-stdin
+        if ( $env:APPVEYOR_REPO_TAG -eq 'true' ) {
+          $major,$minor,$patch = $env:APPVEYOR_REPO_TAG_NAME.split('.')
+          docker push New-Dev3/drone-tele:windows-amd64
+          docker tag New-Dev3/drone-tele:windows-amd64 New-Dev3/drone-tele:$major.$minor.$patch-windows-amd64
+          docker push New-Dev3/drone-tele$major.$minor.$patch-windows-amd64
+          docker tag New-Dev3/drone-tele:windows-amd64 New-Dev3/drone-tele:$major.$minor-windows-amd64
+          docker push New-Dev3/drone-tele:$major.$minor-windows-amd64
+          docker tag New-Dev3/drone-tele:windows-amd64 New-Dev3/drone-tele:$major-windows-amd64
+          docker push New-Dev3/drone-tele:$major-windows-amd64
+        } else {
+          if ( $env:APPVEYOR_REPO_BRANCH -eq 'master' ) {
+            docker push New-Dev3/drone-tele:windows-amd64
+          }
+        }
+      }
