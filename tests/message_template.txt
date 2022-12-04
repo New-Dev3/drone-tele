@@ -1,0 +1,8 @@
+Sample message template loaded from file.
+
+*Environ:* {{tpl.env}}
+*Version:* {{tpl.version}}
+
+Commit msg:  {{commit.message}}
+
+duration: {{duration build.started build.finished}}

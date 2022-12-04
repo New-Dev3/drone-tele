@@ -1,0 +1,5 @@
+Sample message loaded from file.
+
+Commit msg:  {{commit.message}}
+
+duration: {{duration build.started build.finished}}
