@@ -1,0 +1,10 @@
+FROM microsoft/nanoserver:10.0.14393.1884
+
+LABEL maintainer="Alone Dev <New-Dev3.tw@gmail.com>" \
+  org.label-schema.name="Drone tele" \
+  org.label-schema.vendor="Alone Dev" \
+  org.label-schema.schema-version="1.0"
+
+COPY release/drone-tele.exe /drone-tele.exe
+
+ENTRYPOINT [ "\\drone-tele.exe" ]

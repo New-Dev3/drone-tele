@@ -1,0 +1,10 @@
+FROM plugins/base:linux-arm64
+
+LABEL maintainer="Alone Dev <New-Dev3.tw@gmail.com>" \
+  org.label-schema.name="Drone tele" \
+  org.label-schema.vendor="Alone Dev" \
+  org.label-schema.schema-version="1.0"
+
+COPY release/linux/arm64/drone-tele /bin/
+
+ENTRYPOINT ["/bin/drone-tele"]
